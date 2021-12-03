@@ -60,7 +60,7 @@ func day2() {
 		fmt.Println(err)
 	}
 
-	var length, depth int
+	var length, depth, aim int
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, " ")
@@ -72,13 +72,14 @@ func day2() {
 		if val, err := strconv.Atoi(parts[1]); err == nil {
 			switch parts[0] {
 			case "down":
-				depth += val
+				aim += val
 				break
 			case "forward":
 				length += val
+				depth += aim * val
 				break
 			case "up":
-				depth -= val
+				aim -= val
 				break
 			}
 		} else {
