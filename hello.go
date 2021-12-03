@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func scannerForFile(path string) (*bufio.Scanner, error) {
@@ -15,7 +16,7 @@ func scannerForFile(path string) (*bufio.Scanner, error) {
 	}
 }
 
-func main() {
+func day1() {
 	scanner, err := scannerForFile("day1.txt")
 	if err != nil {
 		fmt.Println("Failed to scan file", err)
@@ -51,4 +52,43 @@ func main() {
 	}
 
 	fmt.Println(changeCount)
+}
+
+func day2() {
+	scanner, err := scannerForFile("day2.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var length, depth int
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, " ")
+		if len(parts) < 2 {
+			fmt.Println("Bad input " + line)
+			os.Exit(1)
+		}
+
+		if val, err := strconv.Atoi(parts[1]); err == nil {
+			switch parts[0] {
+			case "down":
+				depth += val
+				break
+			case "forward":
+				length += val
+				break
+			case "up":
+				depth -= val
+				break
+			}
+		} else {
+			fmt.Println(err)
+		}
+	}
+
+	fmt.Println("Depth is ", depth, " length is ", length, ". Total is ", depth*length)
+}
+
+func main() {
+	day2()
 }
