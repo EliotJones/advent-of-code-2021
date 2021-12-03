@@ -90,6 +90,53 @@ func day2() {
 	fmt.Println("Depth is ", depth, " length is ", length, ". Total is ", depth*length)
 }
 
+func day3() {
+	scanner, err := scannerForFile("day3.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	const zeroValue = 48
+
+	var sums []int
+	var count int
+	hasInit := false
+	for scanner.Scan() {
+		byteStr := scanner.Bytes()
+
+		for index, b := range byteStr {
+			binValue := int(b - zeroValue)
+			if !hasInit {
+				sums = append(sums, binValue)
+			} else {
+				sums[index] += binValue
+			}
+		}
+		count++
+
+		hasInit = true
+	}
+
+	var gamma, epsilon int
+	halfPoint := count / 2
+
+	fmt.Println("Content is", sums, "half point", halfPoint)
+
+	for index, i := range sums {
+		var value int
+		if i >= halfPoint {
+			value = 1
+		}
+
+		shift := (len(sums) - index - 1)
+
+		gamma += value << shift
+		epsilon += (1 - value) << shift
+	}
+
+	fmt.Println(gamma, epsilon, gamma*epsilon)
+}
+
 func main() {
-	day2()
+	day3()
 }
