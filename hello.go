@@ -353,12 +353,16 @@ func day4() {
 
 	marked := make([][day4GridSize * day4GridSize]bool, len(boards))
 
+	wonBoards := make([]bool, len(boards))
+
+	var last int
 	for callIndex, val := range announcedValues {
 		index, found := valuesIndex[val]
 		if !found {
 			continue
 		}
 
+		complete := false
 		for _, ix := range index {
 			marked[ix.board][ix.index] = true
 
@@ -393,14 +397,31 @@ func day4() {
 					}
 
 					result := sum * parseInt(val)
+					last = result
+					wonBoards[ix.board] = true
 
-					fmt.Println("Result is", result)
+					allWon := true
+					for i := 0; i < len(wonBoards); i++ {
+						if !wonBoards[i] {
+							allWon = false
+							break
+						}
+					}
 
-					os.Exit(0)
+					if allWon {
+						complete = true
+						break
+					}
 				}
 			}
 		}
+
+		if complete {
+			break
+		}
 	}
+
+	fmt.Println(last)
 }
 
 func main() {
