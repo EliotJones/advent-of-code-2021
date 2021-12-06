@@ -8,6 +8,32 @@ import (
 	"strings"
 )
 
+type binaryNode struct {
+	children   [2]*binaryNode
+	value      int
+	childCount int
+	isRoot     bool
+}
+
+type trie struct {
+	root *binaryNode
+}
+
+func (t trie) insert(value []byte, correction int) {
+	current := t.root
+	for i := 0; i < len(value); i++ {
+		index := int(value[i]) + correction
+		if current.children[index] == nil {
+			current.children[index] = &binaryNode{
+				value: index,
+			}
+		}
+
+		current = current.children[index]
+		current.childCount++
+	}
+}
+
 func scannerForFile(path string) (*bufio.Scanner, error) {
 	if file, err := os.Open(path); err == nil {
 		return bufio.NewScanner(file), nil
@@ -137,6 +163,114 @@ func day3() {
 	fmt.Println(gamma, epsilon, gamma*epsilon)
 }
 
+func chooseCorrectNode(node *binaryNode, isOxygen bool) *binaryNode {
+	var zeroCount, oneCount int
+	if node.children[0] != nil {
+		zeroCount = node.children[0].childCount
+	}
+
+	if node.children[1] != nil {
+		oneCount = node.children[1].childCount
+	}
+
+	if zeroCount == 0 && oneCount == 0 {
+		return nil
+	}
+
+	if node.children[0] == nil {
+		return node.children[1]
+	} else if node.children[1] == nil {
+		return node.children[0]
+	}
+
+	var chosenNode *binaryNode
+	if zeroCount == oneCount {
+		if isOxygen {
+			chosenNode = node.children[1]
+		} else {
+			chosenNode = node.children[0]
+		}
+	} else if zeroCount > oneCount {
+		if isOxygen {
+			chosenNode = node.children[0]
+		} else {
+			chosenNode = node.children[1]
+		}
+	} else {
+		if isOxygen {
+			chosenNode = node.children[1]
+		} else {
+			chosenNode = node.children[0]
+		}
+	}
+
+	return chosenNode
+}
+
+func walkReadingType(node *binaryNode, isOxygen bool, result string) (string, error) {
+	if node == nil {
+		return result, nil
+	}
+
+	bestNode := chooseCorrectNode(node, isOxygen)
+
+	if bestNode == nil {
+		return result + strconv.Itoa(node.value), nil
+	}
+
+	if !node.isRoot {
+		result += strconv.Itoa(node.value)
+	}
+
+	return walkReadingType(bestNode, isOxygen, result)
+}
+
+func binStrToDec(str string) int {
+	var result int
+	for i, c := range str {
+		val, err := strconv.Atoi(string(c))
+		if err != nil {
+			panic(err)
+		}
+		result += val << (len(str) - i - 1)
+	}
+
+	return result
+}
+
+func day3p2() {
+	scanner, err := scannerForFile("day3.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	trie := &trie{
+		root: &binaryNode{
+			isRoot: true,
+		},
+	}
+	for scanner.Scan() {
+		buff := scanner.Bytes()
+		trie.insert(buff, -48)
+	}
+
+	oxStr, oxErr := walkReadingType(trie.root, true, "")
+	if oxErr != nil {
+		panic(oxErr)
+	}
+
+	co2Str, co2Err := walkReadingType(trie.root, false, "")
+	if co2Err != nil {
+		panic(co2Err)
+	}
+
+	ox, co2 := binStrToDec(oxStr), binStrToDec(co2Str)
+
+	fmt.Println(oxStr, co2Str, ox, co2)
+
+	fmt.Println("result", ox*co2)
+}
+
 func main() {
-	day3()
+	day3p2()
 }
