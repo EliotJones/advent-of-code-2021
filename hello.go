@@ -332,9 +332,18 @@ func parseDay4Input(scanner *bufio.Scanner) ([]string, [][day4GridSize * day4Gri
 	return announcedValues, boards, lookup
 }
 
+func parseInt(str string) int {
+	val, err := strconv.Atoi(str)
+	if err != nil {
+		return 0
+	}
+
+	return val
+}
+
 func day4() {
 
-	scanner, err := scannerForFile("day4-0.txt")
+	scanner, err := scannerForFile("day4.txt")
 
 	if err != nil {
 		panic(err)
@@ -353,13 +362,45 @@ func day4() {
 		for _, ix := range index {
 			marked[ix.board][ix.index] = true
 
-			if callIndex >= 4 {
-				// TODO walk this row and column and check if it wins.
+			if callIndex >= 3 {
+				rowStartIndex := ix.index / day4GridSize
+				col := ix.index % day4GridSize
+				isColComplete, isRowComplete := true, true
+				for colIndex := 0; colIndex < day4GridSize; colIndex++ {
+					if !marked[ix.board][col+(colIndex*day4GridSize)] {
+						isColComplete = false
+						break
+					}
+				}
+
+				for rowIndex := 0; rowIndex < day4GridSize; rowIndex++ {
+					if !marked[ix.board][(rowIndex)+(rowStartIndex*day4GridSize)] {
+						isRowComplete = false
+						break
+					}
+				}
+
+				if isRowComplete || isColComplete {
+					markBoard := marked[ix.board]
+					valBoard := boards[ix.board]
+
+					var sum int
+
+					for i := 0; i < day4GridSize*day4GridSize; i++ {
+						if !markBoard[i] {
+							sum += parseInt(valBoard[i])
+						}
+					}
+
+					result := sum * parseInt(val)
+
+					fmt.Println("Result is", result)
+
+					os.Exit(0)
+				}
 			}
 		}
 	}
-
-	fmt.Println(announcedValues, boards, valuesIndex)
 }
 
 func main() {
