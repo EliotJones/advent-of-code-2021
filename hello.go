@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const day4GridSize = 5
+
 type binaryNode struct {
 	children   [2]*binaryNode
 	value      int
@@ -17,6 +19,11 @@ type binaryNode struct {
 
 type trie struct {
 	root *binaryNode
+}
+
+type bingoIndexEntry struct {
+	board int
+	index int
 }
 
 func (t trie) insert(value []byte, correction int) {
@@ -271,6 +278,90 @@ func day3p2() {
 	fmt.Println("result", ox*co2)
 }
 
+func parseDay4Input(scanner *bufio.Scanner) ([]string, [][day4GridSize * day4GridSize]string, map[string][]bingoIndexEntry) {
+	var boards [][day4GridSize * day4GridSize]string
+	var announcedValues []string
+
+	boardIndex, withinBoardIndex := -1, 0
+	lookup := make(map[string][]bingoIndexEntry)
+
+	firstLine := true
+	for scanner.Scan() {
+		line := scanner.Text()
+		if firstLine {
+			announcedValues = strings.Split(line, ",")
+			firstLine = false
+			continue
+		}
+
+		if line == "" {
+			boardIndex++
+			withinBoardIndex = 0
+		} else {
+			lineParts := strings.Split(line, " ")
+
+			if len(boards) <= boardIndex {
+				var next [day4GridSize * day4GridSize]string
+				boards = append(boards, next)
+			}
+
+			for _, val := range lineParts {
+				if len(val) == 0 {
+					continue
+				}
+
+				arr, found := lookup[val]
+				if !found {
+					arr = make([]bingoIndexEntry, 0)
+					lookup[val] = arr
+				}
+
+				ix := bingoIndexEntry{
+					board: boardIndex,
+					index: withinBoardIndex,
+				}
+
+				lookup[val] = append(arr, ix)
+
+				boards[boardIndex][withinBoardIndex] = val
+				withinBoardIndex++
+			}
+		}
+	}
+
+	return announcedValues, boards, lookup
+}
+
+func day4() {
+
+	scanner, err := scannerForFile("day4-0.txt")
+
+	if err != nil {
+		panic(err)
+	}
+
+	announcedValues, boards, valuesIndex := parseDay4Input(scanner)
+
+	marked := make([][day4GridSize * day4GridSize]bool, len(boards))
+
+	for callIndex, val := range announcedValues {
+		index, found := valuesIndex[val]
+		if !found {
+			continue
+		}
+
+		for _, ix := range index {
+			marked[ix.board][ix.index] = true
+
+			if callIndex >= 4 {
+				// TODO walk this row and column and check if it wins.
+			}
+		}
+	}
+
+	fmt.Println(announcedValues, boards, valuesIndex)
+}
+
 func main() {
-	day3p2()
+	day4()
 }
