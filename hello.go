@@ -481,24 +481,41 @@ func day5() {
 	fmt.Println("result is", result)
 }
 
-func day6ZeroAge(day int) []int {
-	var last7Counts []int
-	fishAges := []int{0}
+func day6ZeroAge(day int) [7]int64 {
+	var ageCounts [9]int
+	var last7Counts [7]int64
+
+	// One fish of age zero to begin
+	ageCounts[0] = 1
+
 	for i := 0; i < day; i++ {
-		length := len(fishAges)
-		for j := 0; j < length; j++ {
-			val := fishAges[j]
-			if val == 0 {
-				fishAges = append(fishAges, 8)
-				fishAges[j] = 6
+
+		// Increment each counter, do this in reverse
+		var prev int
+		var sum int64
+		for j := 8; j >= 0; j-- {
+			count := ageCounts[j]
+
+			if j < 8 {
+				ageCounts[j] = prev
+				sum += int64(prev)
+				prev = 0
 			} else {
-				fishAges[j]--
+				ageCounts[j] = 0
+			}
+
+			prev = count
+
+			if j == 0 {
+				ageCounts[8] += prev
+				ageCounts[6] += prev
+
+				sum += int64(prev * 2)
 			}
 		}
-		last7Counts = append(last7Counts, len(fishAges))
 
-		if len(last7Counts) > 7 {
-			last7Counts = last7Counts[1:]
+		if i >= day-7 {
+			last7Counts[7-(day-i)] = sum
 		}
 	}
 
@@ -506,7 +523,7 @@ func day6ZeroAge(day int) []int {
 }
 
 func day6Simple(day int) {
-	scanner, err := scannerForFile("day6-0.txt")
+	scanner, err := scannerForFile("day6.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -533,15 +550,16 @@ func day6Simple(day int) {
 	// Calculate the number of fish for a single fish of starting age 0 on day n (and counts for n - 6 days prior)
 	last7DayCounts := day6ZeroAge(day)
 
-	var result int
+	// Adjust each input age by the correct index from the last 7 days (for age 0 fish) and number with that age.
+	var result int64
 	for k, v := range agesCountMap {
 		countOnDay := last7DayCounts[6-k]
-		result += v * countOnDay
+		result += int64(v) * countOnDay
 	}
 
 	fmt.Println("Result for day", day, "is", result)
 }
 
 func main() {
-	day6Simple(80)
+	day6Simple(256)
 }
