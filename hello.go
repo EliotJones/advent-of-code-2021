@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -333,7 +334,7 @@ func parseDay4Input(scanner *bufio.Scanner) ([]string, [][day4GridSize * day4Gri
 }
 
 func parseInt(str string) int {
-	val, err := strconv.Atoi(str)
+	val, err := strconv.Atoi(strings.Trim(str, " "))
 	if err != nil {
 		return 0
 	}
@@ -424,6 +425,123 @@ func day4() {
 	fmt.Println(last)
 }
 
+func parseDay5InputLine(input string) (line, error) {
+	arrowIndex := strings.Index(input, ">")
+
+	if arrowIndex < 0 {
+		return line{}, errors.New("Line did not contain arrow: " + input)
+	}
+
+	first := strings.Split(input[0:arrowIndex-2], ",")
+	second := strings.Split(input[arrowIndex+1:], ",")
+
+	if len(first) != 2 || len(second) != 2 {
+		return line{}, errors.New("Line did not contain 4 points split by an error: " + input)
+	}
+
+	x1 := parseInt(first[0])
+	y1 := parseInt(first[1])
+	x2 := parseInt(second[0])
+	y2 := parseInt(second[1])
+
+	return *newLine(x1, y1, x2, y2), nil
+}
+
+func day5() {
+	scanner, err := scannerForFile("day5.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	pointCountMap := make(map[point]int)
+
+	var result int
+
+	for scanner.Scan() {
+		textLine := scanner.Text()
+
+		line, err := parseDay5InputLine(textLine)
+
+		if err != nil {
+			panic(err)
+		}
+
+		for _, p := range line.PointsOnLine() {
+			if val, ok := pointCountMap[p]; ok {
+				pointCountMap[p]++
+				if val == 1 {
+					result++
+				}
+			} else {
+				pointCountMap[p] = 1
+			}
+		}
+	}
+
+	fmt.Println("result is", result)
+}
+
+func day6ZeroAge(day int) []int {
+	var last7Counts []int
+	fishAges := []int{0}
+	for i := 0; i < day; i++ {
+		length := len(fishAges)
+		for j := 0; j < length; j++ {
+			val := fishAges[j]
+			if val == 0 {
+				fishAges = append(fishAges, 8)
+				fishAges[j] = 6
+			} else {
+				fishAges[j]--
+			}
+		}
+		last7Counts = append(last7Counts, len(fishAges))
+
+		if len(last7Counts) > 7 {
+			last7Counts = last7Counts[1:]
+		}
+	}
+
+	return last7Counts
+}
+
+func day6Simple(day int) {
+	scanner, err := scannerForFile("day6-0.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	agesCountMap := make(map[int]int)
+
+	for scanner.Scan() {
+		text := scanner.Text()
+
+		parts := strings.Split(text, ",")
+		for _, v := range parts {
+			age := parseInt(v)
+			if cnt, ok := agesCountMap[age]; ok {
+				agesCountMap[age] = cnt + 1
+			} else {
+				agesCountMap[age] = 1
+			}
+		}
+	}
+
+	// Get how many of each starting age
+	fmt.Println(agesCountMap)
+
+	// Calculate the number of fish for a single fish of starting age 0 on day n (and counts for n - 6 days prior)
+	last7DayCounts := day6ZeroAge(day)
+
+	var result int
+	for k, v := range agesCountMap {
+		countOnDay := last7DayCounts[6-k]
+		result += v * countOnDay
+	}
+
+	fmt.Println("Result for day", day, "is", result)
+}
+
 func main() {
-	day4()
+	day6Simple(80)
 }
