@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -481,6 +482,26 @@ func day5() {
 	fmt.Println("result is", result)
 }
 
+func getIntList(fileName string) ([]int, error) {
+	scanner, err := scannerForFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []int
+	for scanner.Scan() {
+		str := scanner.Text()
+
+		parts := strings.Split(str, ",")
+
+		for _, v := range parts {
+			result = append(result, parseInt(v))
+		}
+	}
+
+	return result, nil
+}
+
 func day6ZeroAge(day int) [7]int64 {
 	var ageCounts [9]int
 	var last7Counts [7]int64
@@ -560,6 +581,62 @@ func day6Simple(day int) {
 	fmt.Println("Result for day", day, "is", result)
 }
 
+func abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+
+	return i
+}
+
+func getMinMaxFromSlice(slice []int) (int, int) {
+	lowest := math.MaxInt32
+	var highest int
+	for i := 0; i < len(slice); i++ {
+		val := slice[i]
+		if val < lowest {
+			lowest = val
+		}
+
+		if val > highest {
+			highest = val
+		}
+	}
+
+	return lowest, highest
+}
+
+func day7() {
+	values, err := getIntList("day7.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	min, max := getMinMaxFromSlice(values)
+
+	lowestSum := 5000000
+	index := 0
+	for i := min; i <= max; i++ {
+		var sumForMove int
+		for j := 0; j < len(values); j++ {
+			value := values[j]
+			if i == value {
+				continue
+			}
+
+			gap := abs(value - i)
+			sumForMove += gap
+		}
+
+		if sumForMove < lowestSum {
+			lowestSum = sumForMove
+			index = i
+		}
+	}
+
+	fmt.Println("lowest sum is", lowestSum, "at index", index)
+}
+
 func main() {
-	day6Simple(256)
+	day7()
 }
