@@ -614,7 +614,7 @@ func day7() {
 
 	min, max := getMinMaxFromSlice(values)
 
-	lowestSum := 5000000
+	lowestSum := math.MaxInt32
 	index := 0
 	for i := min; i <= max; i++ {
 		var sumForMove int
@@ -637,6 +637,75 @@ func day7() {
 	fmt.Println("lowest sum is", lowestSum, "at index", index)
 }
 
+func day7p2() {
+	values, err := getIntList("day7.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	min, max := getMinMaxFromSlice(values)
+
+	lowestSum := math.MaxInt32
+	index := 0
+	for i := min; i <= max; i++ {
+		var sumForMove int
+		for j := 0; j < len(values); j++ {
+			value := values[j]
+			if i == value {
+				continue
+			}
+
+			gap := abs(value-i) + 1
+			sumForMove += (gap * (gap - 1)) / 2
+		}
+
+		if sumForMove < lowestSum {
+			lowestSum = sumForMove
+			index = i
+		}
+	}
+
+	fmt.Println("lowest sum is", lowestSum, "at index", index)
+}
+
+func parseDay8OutputStrings(scanner *bufio.Scanner) [][]string {
+	var result [][]string
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, "|")
+		output := strings.Split(strings.Trim(parts[1], " "), " ")
+		result = append(result, output)
+	}
+
+	return result
+}
+
+func day8() {
+	const oneLength = 2
+	const fourLength = 4
+	const sevenLength = 3
+	const eightLength = 7
+
+	scanner, err := scannerForFile("day8.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	output := parseDay8OutputStrings(scanner)
+
+	var result int
+	for _, line := range output {
+		for _, str := range line {
+			length := len(str)
+			if length == oneLength || length == fourLength || length == sevenLength || length == eightLength {
+				result++
+			}
+		}
+	}
+
+	fmt.Println("Result is", result)
+}
+
 func main() {
-	day7()
+	day8()
 }
