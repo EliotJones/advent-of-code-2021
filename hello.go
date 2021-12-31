@@ -11,6 +11,10 @@ import (
 )
 
 const day4GridSize = 5
+const day8OneLength = 2
+const day8FourLength = 4
+const day8SevenLength = 3
+const day8EightLength = 7
 
 type binaryNode struct {
 	children   [2]*binaryNode
@@ -26,6 +30,11 @@ type trie struct {
 type bingoIndexEntry struct {
 	board int
 	index int
+}
+
+type day8InputOutput struct {
+	input  []string
+	output []string
 }
 
 func (t trie) insert(value []byte, correction int) {
@@ -668,36 +677,36 @@ func day7p2() {
 	fmt.Println("lowest sum is", lowestSum, "at index", index)
 }
 
-func parseDay8OutputStrings(scanner *bufio.Scanner) [][]string {
-	var result [][]string
+func parseDay8InputLines(scanner *bufio.Scanner) []day8InputOutput {
+	var result []day8InputOutput
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, "|")
+		input := strings.Split(strings.Trim(parts[0], " "), " ")
 		output := strings.Split(strings.Trim(parts[1], " "), " ")
-		result = append(result, output)
+		result = append(result, day8InputOutput{
+			input:  input,
+			output: output,
+		})
 	}
 
 	return result
 }
 
 func day8() {
-	const oneLength = 2
-	const fourLength = 4
-	const sevenLength = 3
-	const eightLength = 7
 
 	scanner, err := scannerForFile("day8.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	output := parseDay8OutputStrings(scanner)
+	lines := parseDay8InputLines(scanner)
 
 	var result int
-	for _, line := range output {
-		for _, str := range line {
+	for _, line := range lines {
+		for _, str := range line.output {
 			length := len(str)
-			if length == oneLength || length == fourLength || length == sevenLength || length == eightLength {
+			if length == day8OneLength || length == day8FourLength || length == day8SevenLength || length == day8EightLength {
 				result++
 			}
 		}
@@ -706,6 +715,113 @@ func day8() {
 	fmt.Println("Result is", result)
 }
 
+func day8p2() {
+	// Digital display numbers as binary,
+	// values are in order top, topLeft, topRight, middle, bottomLeft, bottomRight, bottom.
+	digitalDisplayNumbersByteEncoded := [10]byte{
+		byte(0b1110111),
+		byte(0b0010010),
+		byte(0b1011101),
+		byte(0b1011011),
+		byte(0b0111010),
+		byte(0b1101011),
+		byte(0b1101111),
+		byte(0b1010010),
+		byte(0b1111111),
+		byte(0b1111011),
+	}
+
+	scanner, err := scannerForFile("day8.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	lines := parseDay8InputLines(scanner)
+
+	// Get known values (1, 4, 7, 8) and values by number of segments from input.
+	var overallResult int
+	for _, line := range lines {
+		var one, two, three, four, five, seven, eight map[byte]struct{}
+		var fiveLengths, sixLengths []map[byte]struct{}
+		for _, str := range line.input {
+			if len(str) == day8OneLength {
+				one = stringToMap(str)
+			} else if len(str) == day8FourLength {
+				four = stringToMap(str)
+			} else if len(str) == day8SevenLength {
+				seven = stringToMap(str)
+			} else if len(str) == day8EightLength {
+				eight = stringToMap(str)
+			} else if len(str) == 6 {
+				sixLengths = append(sixLengths, stringToMap(str))
+			} else if len(str) == 5 {
+				fiveLengths = append(fiveLengths, stringToMap(str))
+			}
+		}
+
+		// Start finding corresponding segments.
+		var top, topRight, topLeft, middle, bottomLeft, bottomRight, bottom byte
+		var sixIndex int
+
+		// 7 is 1 plus the line at the top.
+		top = except(seven, one)[0]
+		// 6 is the only digit of length 6 missing a part of 1 (the top right).
+		topRight, sixIndex = deduceTopRightAndSixIndex(sixLengths, one)
+		// The other non-top-right element of one is the bottom right.
+		bottomRight = deduceBottomRight(topRight, one)
+
+		// Length 5 digits are 2, 3 and 5.
+		for _, m := range fiveLengths {
+			// Of length 5 digits, only 3 completely excludes 1.
+			diff := except(one, m)
+			if len(diff) == 0 {
+				three = m
+			} else if contains(m, bottomRight) {
+				// 2 is missing bottom right so this must be 5.
+				five = m
+			} else if contains(m, topRight) {
+				// 5 is missing top right so this must be 2.
+				two = m
+			}
+		}
+
+		// Subtract 5 from 2 and you have bottom left and top right.
+		bottomLeft = deduceBottomLeft(two, five, topRight)
+		bottom = deduceBottom(four, seven, eight, bottomLeft)
+
+		// Length 6 digits are 0, 6 and 9.
+		for i, m := range sixLengths {
+			if i == sixIndex {
+				continue
+			}
+
+			// 8 minus 9 leaves bottom left, 8 minus 0 leaves middle.
+			diff := except(eight, m)
+			if diff[0] == bottomLeft {
+				topLeft = except(m, three)[0]
+			} else {
+				middle = diff[0]
+			}
+		}
+
+		// All values are now found, map back to binary representation.
+		bytesToShiftMap := map[byte]int{
+			top:         0,
+			topLeft:     1,
+			topRight:    2,
+			middle:      3,
+			bottomLeft:  4,
+			bottomRight: 5,
+			bottom:      6,
+		}
+
+		lineResult := mapDisplayOutputToInt(bytesToShiftMap, line.output, digitalDisplayNumbersByteEncoded)
+		overallResult += lineResult
+	}
+
+	fmt.Println("Result is", overallResult)
+}
+
 func main() {
-	day8()
+	day8p2()
 }
