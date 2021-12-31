@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type openChunk struct {
 	open       string
@@ -40,7 +43,7 @@ func containsStr(v string, m map[string]string) bool {
 	return false
 }
 
-func parseLineReturnFirstInvalid(line string, openClose map[string]string) string {
+func parseLineReturnFirstInvalidOrStack(line string, openClose map[string]string) (string, chunkStack) {
 	stack := make(chunkStack, 0)
 
 	for i := 0; i < len(line); i++ {
@@ -56,29 +59,35 @@ func parseLineReturnFirstInvalid(line string, openClose map[string]string) strin
 			if top.close == c {
 				stack, _ = stack.Pop()
 			} else {
-				return c
+				return c, stack
 			}
 		} else {
-			return c
+			return c, stack
 		}
 	}
 
-	return ""
+	return "", stack
 }
 
-func day10() {
-	charScores := map[string]int{
-		")": 3,
-		"]": 57,
-		"}": 1197,
-		">": 25137,
-	}
-
+func getOpenCloseMapping() map[string]string {
 	openClose := map[string]string{
 		"(": ")",
 		"[": "]",
 		"{": "}",
 		"<": ">",
+	}
+
+	return openClose
+}
+
+func day10() {
+	openClose := getOpenCloseMapping()
+
+	charScores := map[string]int{
+		")": 3,
+		"]": 57,
+		"}": 1197,
+		">": 25137,
 	}
 
 	scanner, err := scannerForFile("day10.txt")
@@ -88,7 +97,7 @@ func day10() {
 
 	var result int
 	for scanner.Scan() {
-		invalid := parseLineReturnFirstInvalid(scanner.Text(), openClose)
+		invalid, _ := parseLineReturnFirstInvalidOrStack(scanner.Text(), openClose)
 
 		if invalid == "" {
 			continue
@@ -98,4 +107,49 @@ func day10() {
 	}
 
 	fmt.Println("Result is", result)
+}
+
+func day10p2() {
+	openClose := getOpenCloseMapping()
+
+	charScores := map[string]int{
+		")": 1,
+		"]": 2,
+		"}": 3,
+		">": 4,
+	}
+
+	scanner, err := scannerForFile("day10.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	var scores []int64
+	for scanner.Scan() {
+		invalid, stack := parseLineReturnFirstInvalidOrStack(scanner.Text(), openClose)
+
+		if invalid != "" {
+			continue
+		}
+
+		var result int
+		for {
+			if len(stack) > 0 {
+				var top openChunk
+				stack, top = stack.Pop()
+
+				result *= 5
+				result += charScores[top.close]
+			} else {
+				scores = append(scores, int64(result))
+				break
+			}
+		}
+	}
+
+	sort.Slice(scores, func(i, j int) bool { return scores[i] < scores[j] })
+
+	mid := scores[len(scores)/2]
+
+	fmt.Println("Result is", mid)
 }
