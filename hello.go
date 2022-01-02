@@ -16,6 +16,8 @@ const day8FourLength = 4
 const day8SevenLength = 3
 const day8EightLength = 7
 
+const asciiNumToByteAdjustment = 48
+
 type binaryNode struct {
 	children   [2]*binaryNode
 	value      int
@@ -823,5 +825,5 @@ func day8p2() {
 }
 
 func main() {
-	day10p2()
+	day11()
 }
