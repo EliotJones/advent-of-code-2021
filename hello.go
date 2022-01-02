@@ -825,5 +825,5 @@ func day8p2() {
 }
 
 func main() {
-	day12()
+	day12p2()
 }

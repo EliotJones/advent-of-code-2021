@@ -68,10 +68,6 @@ func parseDay12InputFromFileToGraph(path string) *day12GraphNode {
 			continue
 		}
 
-		if nodes[0] == "dc" {
-			fmt.Println("dc node")
-		}
-
 		addOrCreateNode(nodes[0], &labelToNodeMap, id)
 		// Leaves gaps but we don't need contiguous.
 		id++
@@ -98,7 +94,17 @@ func parseDay12InputFromFileToGraph(path string) *day12GraphNode {
 	return labelToNodeMap["start"]
 }
 
-func recursiveVisitNext(current *day12GraphNode, route []string, result *[][]string) {
+func routeAlreadyContainsNode(route []string, label string) bool {
+	for _, entry := range route {
+		if entry == label {
+			return true
+		}
+	}
+
+	return false
+}
+
+func recursiveVisitNext(current *day12GraphNode, route []string, result *[][]string, canRevisitSmall bool) {
 
 	// We always visited this one.
 	route = append(route, current.label)
@@ -115,22 +121,20 @@ func recursiveVisitNext(current *day12GraphNode, route []string, result *[][]str
 		if n.cavernType == d12StartType {
 			continue
 		} else if n.cavernType == d12SmallType {
-			var isRevisit bool
-			for _, label := range route {
-				if label == n.label {
-					isRevisit = true
-					break
-				}
-			}
+			isRevisit := routeAlreadyContainsNode(route, n.label)
 
 			if isRevisit {
+				if canRevisitSmall {
+					recursiveVisitNext(n, newRoute, result, false)
+				}
+
 				continue
 			}
 
 			// Visit small node
-			recursiveVisitNext(n, newRoute, result)
+			recursiveVisitNext(n, newRoute, result, canRevisitSmall)
 		} else {
-			recursiveVisitNext(n, newRoute, result)
+			recursiveVisitNext(n, newRoute, result, canRevisitSmall)
 		}
 	}
 }
@@ -140,7 +144,17 @@ func day12() {
 
 	result := make([][]string, 0)
 
-	recursiveVisitNext(startNode, make([]string, 0), &result)
+	recursiveVisitNext(startNode, make([]string, 0), &result, false)
+
+	fmt.Println("Result is", len(result))
+}
+
+func day12p2() {
+	startNode := parseDay12InputFromFileToGraph("inputs/day12.txt")
+
+	result := make([][]string, 0)
+
+	recursiveVisitNext(startNode, make([]string, 0), &result, true)
 
 	fmt.Println("Result is", len(result))
 }
