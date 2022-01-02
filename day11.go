@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 func parseFileToGrid(file string) [][]byte {
 	scanner, err := scannerForFile(file)
@@ -96,7 +99,6 @@ func incrementDay11GridCountingFlashes(grid *[][]byte) int {
 
 	// Could do something recursive but let's just brute force.
 	for {
-
 		var flashesThisRun int
 		for rowIndex := 0; rowIndex < len(*grid); rowIndex++ {
 			row := (*grid)[rowIndex]
@@ -119,6 +121,38 @@ func incrementDay11GridCountingFlashes(grid *[][]byte) int {
 	}
 
 	return flashes
+}
+
+func incrementDay11GridFindSyncPoint(grid *[][]byte) bool {
+	incrementAllValuesByOne(grid)
+
+	expectedFlashCount := len(*grid) * len((*grid)[0])
+
+	// Could do something recursive but let's just brute force.
+
+	var flashes int
+	for {
+		var flashesThisRun int
+		for rowIndex := 0; rowIndex < len(*grid); rowIndex++ {
+			row := (*grid)[rowIndex]
+			for colIndex := 0; colIndex < len(row); colIndex++ {
+				val := row[colIndex]
+				if val > 9 {
+					row[colIndex] = 0
+					flashesThisRun++
+					flashes++
+
+					incrementNeighbours(grid, rowIndex, colIndex)
+				}
+			}
+		}
+
+		if flashesThisRun == 0 {
+			break
+		}
+	}
+
+	return flashes == expectedFlashCount
 }
 
 func printGrid(grid *[][]byte) {
@@ -146,4 +180,19 @@ func day11() {
 	}
 
 	fmt.Println("Result is", flashes, "flashes")
+}
+
+func day11p2() {
+	grid := parseFileToGrid("day11.txt")
+	gridPointer := &grid
+
+	numDays := math.MaxInt32
+	for i := 0; i < numDays; i++ {
+		haveAllFlashed := incrementDay11GridFindSyncPoint(gridPointer)
+
+		if haveAllFlashed {
+			fmt.Println("Sync flash happened at step", i+1)
+			break
+		}
+	}
 }
