@@ -115,7 +115,7 @@ func day13() {
 	points, folds := parseDay13Input("inputs/day13.txt")
 	maxX, maxY := getMaxXAndY(points)
 
-	foldsToRun := 1
+	foldsToRun := len(folds)
 	for i := 0; i < foldsToRun; i++ {
 		fold := folds[i]
 
@@ -164,6 +164,7 @@ func day13() {
 		maxX, maxY = getMaxXAndY(points)
 
 		fmt.Println("After fold", i, "at", fold.location, "there are", countValidDay13Points(points, removedVal), "points")
-		// printGridDay13(points, maxX, maxY)
 	}
+
+	printGridDay13(points, maxX, maxY)
 }
