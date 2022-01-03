@@ -162,7 +162,7 @@ func printGrid(grid *[][]byte) {
 }
 
 func day11() {
-	grid := parseFileToGrid("day11.txt")
+	grid := parseFileToGrid("inputs/day11.txt")
 	gridPointer := &grid
 
 	printGrid(gridPointer)
@@ -183,7 +183,7 @@ func day11() {
 }
 
 func day11p2() {
-	grid := parseFileToGrid("day11.txt")
+	grid := parseFileToGrid("inputs/day11.txt")
 	gridPointer := &grid
 
 	numDays := math.MaxInt32

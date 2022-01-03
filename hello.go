@@ -63,7 +63,7 @@ func scannerForFile(path string) (*bufio.Scanner, error) {
 }
 
 func day1() {
-	scanner, err := scannerForFile("day1.txt")
+	scanner, err := scannerForFile("inputs/day1.txt")
 	if err != nil {
 		fmt.Println("Failed to scan file", err)
 		os.Exit(1)
@@ -101,7 +101,7 @@ func day1() {
 }
 
 func day2() {
-	scanner, err := scannerForFile("day2.txt")
+	scanner, err := scannerForFile("inputs/day2.txt")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -137,7 +137,7 @@ func day2() {
 }
 
 func day3() {
-	scanner, err := scannerForFile("day3.txt")
+	scanner, err := scannerForFile("inputs/day3.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -259,7 +259,7 @@ func binStrToDec(str string) int {
 }
 
 func day3p2() {
-	scanner, err := scannerForFile("day3.txt")
+	scanner, err := scannerForFile("inputs/day3.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -356,7 +356,7 @@ func parseInt(str string) int {
 
 func day4() {
 
-	scanner, err := scannerForFile("day4.txt")
+	scanner, err := scannerForFile("inputs/day4.txt")
 
 	if err != nil {
 		panic(err)
@@ -460,7 +460,7 @@ func parseDay5InputLine(input string) (line, error) {
 }
 
 func day5() {
-	scanner, err := scannerForFile("day5.txt")
+	scanner, err := scannerForFile("inputs/day5.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -555,7 +555,7 @@ func day6ZeroAge(day int) [7]int64 {
 }
 
 func day6Simple(day int) {
-	scanner, err := scannerForFile("day6.txt")
+	scanner, err := scannerForFile("inputs/day6.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -618,7 +618,7 @@ func getMinMaxFromSlice(slice []int) (int, int) {
 }
 
 func day7() {
-	values, err := getIntList("day7.txt")
+	values, err := getIntList("inputs/day7.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -649,7 +649,7 @@ func day7() {
 }
 
 func day7p2() {
-	values, err := getIntList("day7.txt")
+	values, err := getIntList("inputs/day7.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -697,7 +697,7 @@ func parseDay8InputLines(scanner *bufio.Scanner) []day8InputOutput {
 
 func day8() {
 
-	scanner, err := scannerForFile("day8.txt")
+	scanner, err := scannerForFile("inputs/day8.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -733,7 +733,7 @@ func day8p2() {
 		byte(0b1111011),
 	}
 
-	scanner, err := scannerForFile("day8.txt")
+	scanner, err := scannerForFile("inputs/day8.txt")
 	if err != nil {
 		panic(err)
 	}

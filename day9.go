@@ -54,7 +54,7 @@ func isLowestPoint(row int, col int, grid [][]byte) bool {
 }
 
 func day9() {
-	scanner, err := scannerForFile("day9.txt")
+	scanner, err := scannerForFile("inputs/day9.txt")
 
 	if err != nil {
 		panic(err)
@@ -116,7 +116,7 @@ func getBasinArea(location point, visited *[]point, grid [][]byte) int {
 }
 
 func day9p2() {
-	scanner, err := scannerForFile("day9.txt")
+	scanner, err := scannerForFile("inputs/day9.txt")
 
 	if err != nil {
 		panic(err)

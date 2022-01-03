@@ -90,7 +90,7 @@ func day10() {
 		">": 25137,
 	}
 
-	scanner, err := scannerForFile("day10.txt")
+	scanner, err := scannerForFile("inputs/day10.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -119,7 +119,7 @@ func day10p2() {
 		">": 4,
 	}
 
-	scanner, err := scannerForFile("day10.txt")
+	scanner, err := scannerForFile("inputs/day10.txt")
 	if err != nil {
 		panic(err)
 	}
