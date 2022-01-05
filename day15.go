@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+type day15Node struct {
+	id     int32
+	weight int
+	links  []*day15Node
+}
+
 type highScore struct {
 	val int
 }
@@ -29,6 +35,81 @@ func parseDay15Input(path string) [][]byte {
 	}
 
 	return result
+}
+
+func parseDay15InputToGraphAndGetEndId(path string, repeats int) (*day15Node, int32) {
+	scanner, err := scannerForFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	lines := make([][]byte, 0)
+
+	var lastId int32
+	nodes := make(map[int32]*day15Node, 0)
+	var rowIndex, colIndex int
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+
+		lines = append(lines, line)
+	}
+
+	for r := 0; r < repeats; r++ {
+		for lineIndex := 0; lineIndex < len(lines); lineIndex++ {
+			line := lines[lineIndex]
+
+			colIndex = 0
+			for r2 := 0; r2 < repeats; r2++ {
+				for i := 0; i < len(line); i++ {
+					b := line[i] - asciiNumToByteAdjustment
+
+					riskAdjustment := byte((r) + (r2))
+
+					if b+riskAdjustment > 9 {
+						b = (b + riskAdjustment) - 9
+					} else {
+						b += riskAdjustment
+					}
+
+					id := keyForLocation(colIndex, rowIndex)
+
+					node := day15Node{
+						id:     id,
+						weight: int(b),
+						links:  make([]*day15Node, 0),
+					}
+
+					nodePointer := &node
+
+					if colIndex > 0 {
+						prevKey := keyForLocation(colIndex-1, rowIndex)
+						prevNode := nodes[prevKey]
+						node.links = append(node.links, prevNode)
+						(*prevNode).links = append((*prevNode).links, nodePointer)
+					}
+
+					if rowIndex > 0 {
+						prevKey := keyForLocation(colIndex, rowIndex-1)
+						prevNode := nodes[prevKey]
+						node.links = append(node.links, prevNode)
+						(*prevNode).links = append((*prevNode).links, nodePointer)
+					}
+
+					nodes[id] = nodePointer
+					lastId = id
+					colIndex++
+				}
+			}
+
+			rowIndex++
+		}
+	}
+
+	// Get the start node
+	return nodes[0], lastId
 }
 
 func getTopRightEdgeAndBottomLeftEdgeAndSimpleMinScore(grid [][]byte) (int, int, int) {
@@ -95,11 +176,11 @@ func tooHighScoring(score int, results *[]int) bool {
 	return false
 }
 
-func keyForLocation(x int, y int) int16 {
-	return (int16(x) << 8) + int16(y)
+func keyForLocation(x int, y int) int32 {
+	return (int32(x) << 16) + int32(y)
 }
 
-func moveNext(x int, y int, grid *[][]byte, score int, width int, height int, result *highScore, visited map[int16]bool) {
+func moveNext(x int, y int, grid *[][]byte, score int, width int, height int, result *highScore, visited map[int32]bool) {
 	score += int((*grid)[x][y])
 
 	if score > (*result).val {
@@ -122,31 +203,21 @@ func moveNext(x int, y int, grid *[][]byte, score int, width int, height int, re
 	if v, ok := visited[key]; ok {
 		if v {
 			// Do not backtrack.
-			// fmt.Println("Backtracked, exiting")
 			return
 		}
 	}
 
 	visited[key] = true
 
-	// // Copy visited map
-	// newVisited := make(map[int16]struct{}, len(visited)+1)
-	// for k, v := range visited {
-	// 	newVisited[k] = v
-	// }
-
-	// newVisited[key] = empty
-
-	// if x > 0 {
-	// 	moveNext(x-1, y, grid, score, results, newVisited)
-	// }
+	if x > 0 {
+		moveNext(x-1, y, grid, score, width, height, result, visited)
+	}
 	if x < width-1 {
 		moveNext(x+1, y, grid, score, width, height, result, visited)
 	}
-	// if y > 0 {
-	// 	moveNext(x, y-1, grid, score, results, newVisited)
-	// }
-
+	if y > 0 {
+		moveNext(x, y-1, grid, score, width, height, result, visited)
+	}
 	if y < height-1 {
 		moveNext(x, y+1, grid, score, width, height, result, visited)
 	}
@@ -154,7 +225,38 @@ func moveNext(x int, y int, grid *[][]byte, score int, width int, height int, re
 	visited[key] = false
 }
 
-func day15() {
+func dijkstra(queue *lowestDistanceQueue, initial *day15Node, endId int32) {
+	distances := make(map[int32]int)
+	distances[initial.id] = initial.weight
+
+	for {
+		hasPop, elem := (*queue).pop()
+		if !hasPop {
+			break
+		}
+
+		node := elem.value.(*day15Node)
+		for _, link := range node.links {
+			newDistance := link.weight + elem.distance
+			if d, ok := distances[link.id]; ok {
+				if newDistance < d {
+
+					distances[link.id] = newDistance
+					(*queue).push(link.id, link, newDistance)
+				}
+			} else {
+				distances[link.id] = newDistance
+				(*queue).push(link.id, link, newDistance)
+			}
+
+		}
+	}
+
+	res := distances[endId]
+	fmt.Println("Result is", res)
+}
+
+func day15BruteForce() {
 	grid := parseDay15Input("inputs/day15-0.txt")
 
 	topRight, bottomLeft, simpleMin := getTopRightEdgeAndBottomLeftEdgeAndSimpleMinScore(grid)
@@ -169,7 +271,7 @@ func day15() {
 
 	// Ignore start position
 	score := -1 * int(grid[0][0])
-	visited := make(map[int16]bool, 0)
+	visited := make(map[int32]bool, 0)
 	result := &highScore{
 		val: min,
 	}
@@ -177,4 +279,24 @@ func day15() {
 	moveNext(0, 0, &grid, score, len(grid[0]), len(grid), result, visited)
 
 	fmt.Println("Result is", result.val)
+}
+
+func day15() {
+	startNode, endId := parseDay15InputToGraphAndGetEndId("inputs/day15.txt", 1)
+
+	queue := make(lowestDistanceQueue, 0)
+
+	queue.push(startNode.id, startNode, 0)
+
+	dijkstra(&queue, startNode, endId)
+}
+
+func day15p2() {
+	startNode, endId := parseDay15InputToGraphAndGetEndId("inputs/day15.txt", 5)
+
+	queue := make(lowestDistanceQueue, 0)
+
+	queue.push(startNode.id, startNode, 0)
+
+	dijkstra(&queue, startNode, endId)
 }
