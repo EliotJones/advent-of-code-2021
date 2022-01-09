@@ -43,13 +43,14 @@ func parseDay15InputToGraphAndGetEndId(path string, repeats int) (*day15Node, in
 		panic(err)
 	}
 
-	lines := make([][]byte, 0)
+	lines := make([]string, 0)
 
 	var lastId int32
 	nodes := make(map[int32]*day15Node, 0)
 	var rowIndex, colIndex int
 	for scanner.Scan() {
-		line := scanner.Bytes()
+		// Bufio breaks (expected but bad) if using bytes here: https://stackoverflow.com/questions/24919968/strange-behavior-of-buffo-scanner-reading-file-line-by-line.
+		line := scanner.Text()
 		if len(line) == 0 {
 			continue
 		}
@@ -227,7 +228,7 @@ func moveNext(x int, y int, grid *[][]byte, score int, width int, height int, re
 
 func dijkstra(queue *lowestDistanceQueue, initial *day15Node, endId int32) {
 	distances := make(map[int32]int)
-	distances[initial.id] = initial.weight
+	distances[initial.id] = 0
 
 	for {
 		hasPop, elem := (*queue).pop()
