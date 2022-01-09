@@ -20,3 +20,5 @@ This is probably terrible Go but it's my first time using the language.
 - [Day 12](https://github.com/EliotJones/advent-of-code-2021/blob/6f089c22885cc0734d1af36848ccaeb93213d270/day12.go)
 - [Day 13](https://github.com/EliotJones/advent-of-code-2021/blob/6f089c22885cc0734d1af36848ccaeb93213d270/day13.go)
 - [Day 14](https://github.com/EliotJones/advent-of-code-2021/blob/6f089c22885cc0734d1af36848ccaeb93213d270/day14.go)
+- [Day 15](https://github.com/EliotJones/advent-of-code-2021/blob/8855c17c0f9b347ca5db859b44390ff6e8e1e479/day15.go)
+- [Day 16](https://github.com/EliotJones/advent-of-code-2021/blob/8855c17c0f9b347ca5db859b44390ff6e8e1e479/day16.go)
