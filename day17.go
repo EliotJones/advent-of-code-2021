@@ -85,9 +85,10 @@ func day17() {
 	maxPossibleX := maxTx
 	maxPossibleY := abs(minTy)
 
+	var pairsWithinBounds int
 	maxY := 0
 
-	for y := 1; y < maxPossibleY+1; y++ {
+	for y := minTy; y < maxPossibleY+1; y++ {
 		for x := 1; x < maxPossibleX+1; x++ {
 
 			max, inTarget := getHighestPointAndDoesInterceptTarget(x, y, p1, p2)
@@ -96,11 +97,13 @@ func day17() {
 				continue
 			}
 
+			pairsWithinBounds++
+
 			if max.y > maxY {
 				maxY = max.y
 			}
 		}
 	}
 
-	fmt.Println("Encountered", maxY)
+	fmt.Println("Max Y was", maxY, "from", pairsWithinBounds, "valid pairs")
 }
