@@ -101,6 +101,9 @@ func addDay18(left *day18Node, right *day18Node) *day18Node {
 	newRoot.left = left
 	newRoot.right = right
 
+	left.parent = newRoot
+	right.parent = newRoot
+
 	return newRoot
 }
 
@@ -128,6 +131,10 @@ func addDay18Values(one string, two string) string {
 }
 
 func findAndAddToFirstInDirection(sourceValue string, current *day18Node, former *day18Node, goLeft bool, descending bool) bool {
+	if current == nil {
+		return false
+	}
+
 	if descending {
 		// Swap search direction
 		if goLeft && current.right != nil {
@@ -186,11 +193,6 @@ func explodeDay18Recursive(current *day18Node, depth int) bool {
 		if isLeftReduced {
 			return true
 		}
-	} else if isDay18ValueTooBig(current.leftValue) {
-		split := splitDay18Value(current.leftValue)
-		current.leftValue = ""
-		current.left = split
-		return true
 	}
 
 	if current.right != nil {
@@ -198,10 +200,29 @@ func explodeDay18Recursive(current *day18Node, depth int) bool {
 		if isRightReduced {
 			return true
 		}
+	}
+
+	return false
+}
+
+func splitDay18Recursive(current *day18Node) bool {
+	if isDay18ValueTooBig(current.leftValue) {
+		split := splitDay18Value(current.leftValue)
+		current.leftValue = ""
+		current.left = split
+
+		split.parent = current
+		return true
+	} else if current.left != nil && splitDay18Recursive(current.left) {
+		return true
 	} else if isDay18ValueTooBig(current.rightValue) {
 		split := splitDay18Value(current.rightValue)
 		current.rightValue = ""
 		current.right = split
+
+		split.parent = current
+		return true
+	} else if current.right != nil && splitDay18Recursive(current.right) {
 		return true
 	}
 
@@ -211,7 +232,13 @@ func explodeDay18Recursive(current *day18Node, depth int) bool {
 func reduceDay18(input *day18Node) *day18Node {
 	for {
 		hasExploded := explodeDay18Recursive(input, 1)
-		if !hasExploded {
+		if hasExploded {
+			continue
+		}
+
+		hasSplit := splitDay18Recursive(input)
+
+		if !hasSplit {
 			break
 		}
 	}

@@ -83,10 +83,25 @@ func TestDay18Reduce(t *testing.T) {
 
 		current := parseDay18String(input)
 
-		reduced := reduceDay18(current)
+		explodeDay18Recursive(current, 1)
 
-		if reduced.String() != expected[i] {
-			t.Errorf("Expected %s but got %s", expected[i], reduced.String())
+		if current.String() != expected[i] {
+			t.Errorf("Expected %s but got %s", expected[i], current.String())
 		}
+	}
+}
+
+func TestDay18WholeSum(t *testing.T) {
+	left := parseDay18String("[[[[4,3],4],4],[7,[[8,4],9]]]")
+	right := parseDay18String("[1,1]")
+
+	input := addDay18(left, right)
+
+	reduced := reduceDay18(input)
+
+	expected := "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+
+	if reduced.String() != expected {
+		t.Errorf("Expected %s but got %s", expected, reduced.String())
 	}
 }
