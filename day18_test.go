@@ -105,3 +105,46 @@ func TestDay18WholeSum(t *testing.T) {
 		t.Errorf("Expected %s but got %s", expected, reduced.String())
 	}
 }
+
+func TestCompleteRunDay18(t *testing.T) {
+	inputs := [][]string{
+		{
+			"[1,1]",
+			"[2,2]",
+			"[3,3]",
+			"[4,4]",
+		},
+		{
+			"[1,1]",
+			"[2,2]",
+			"[3,3]",
+			"[4,4]",
+			"[5,5]",
+		},
+		{
+			"[1,1]",
+			"[2,2]",
+			"[3,3]",
+			"[4,4]",
+			"[5,5]",
+			"[6,6]",
+		},
+	}
+
+	expecteds := []string{
+		"[[[[1,1],[2,2]],[3,3]],[4,4]]",
+		"[[[[3,0],[5,3]],[4,4]],[5,5]]",
+		"[[[[5,0],[7,4]],[5,5]],[6,6]]",
+	}
+
+	for i, input := range inputs {
+		fmt.Println("Day 18 for complete input: ", input)
+
+		result := runToEndDay18(input)
+		resultStr := result.String()
+
+		if resultStr != expecteds[i] {
+			t.Errorf("Expected %s but got %s", expecteds[i], resultStr)
+		}
+	}
+}

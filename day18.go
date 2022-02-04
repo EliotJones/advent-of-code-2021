@@ -245,3 +245,19 @@ func reduceDay18(input *day18Node) *day18Node {
 
 	return input
 }
+
+func runToEndDay18(input []string) *day18Node {
+	var root *day18Node
+	for _, str := range input {
+		this := parseDay18String(str)
+		if root == nil {
+			root = this
+		} else {
+			root = addDay18(root, this)
+		}
+
+		root = reduceDay18(root)
+	}
+
+	return root
+}
