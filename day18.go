@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 type day18Node struct {
 	left       *day18Node
@@ -91,4 +94,127 @@ func parseDay18String(value string) *day18Node {
 	}
 
 	return root
+}
+
+func addDay18(left *day18Node, right *day18Node) *day18Node {
+	newRoot := NewDay18Node()
+	newRoot.left = left
+	newRoot.right = right
+
+	return newRoot
+}
+
+func isDay18ValueTooBig(value string) bool {
+	intVal := parseInt(value)
+
+	return intVal >= 10
+}
+
+func splitDay18Value(value string) *day18Node {
+	intVal := parseInt(value)
+
+	left := intVal / 2
+	right := intVal - left
+
+	node := NewDay18Node()
+	node.leftValue = strconv.Itoa(left)
+	node.rightValue = strconv.Itoa(right)
+
+	return node
+}
+
+func addDay18Values(one string, two string) string {
+	return strconv.Itoa(parseInt(one) + parseInt(two))
+}
+
+func findAndAddToFirstInDirection(sourceValue string, current *day18Node, former *day18Node, goLeft bool, descending bool) bool {
+	if descending {
+		// Swap search direction
+		if goLeft && current.right != nil {
+			return findAndAddToFirstInDirection(sourceValue, current.right, current, goLeft, descending)
+		} else if goLeft && current.rightValue != "" {
+			current.rightValue = addDay18Values(sourceValue, current.rightValue)
+			return true
+		} else if !goLeft && current.left != nil {
+			return findAndAddToFirstInDirection(sourceValue, current.left, current, goLeft, descending)
+		} else if !goLeft && current.leftValue != "" {
+			current.leftValue = addDay18Values(sourceValue, current.leftValue)
+			return true
+		}
+		return false
+	}
+
+	if !goLeft && current.right != former && current.right != nil {
+		return findAndAddToFirstInDirection(sourceValue, current.right, current, goLeft, true)
+	} else if !goLeft && current.rightValue != "" {
+		current.rightValue = addDay18Values(sourceValue, current.rightValue)
+		return true
+	} else if goLeft && current.left != former && current.left != nil {
+		return findAndAddToFirstInDirection(sourceValue, current.left, current, goLeft, true)
+	} else if goLeft && current.leftValue != "" {
+		current.leftValue = addDay18Values(sourceValue, current.leftValue)
+		return true
+	} else if current.parent != nil {
+		return findAndAddToFirstInDirection(sourceValue, current.parent, current, goLeft, descending)
+	} else {
+		return false
+	}
+}
+
+func explodeDay18Recursive(current *day18Node, depth int) bool {
+	if depth >= 5 && current.leftValue != "" && current.rightValue != "" {
+		// Explode
+		parent := current.parent
+
+		findAndAddToFirstInDirection(current.leftValue, parent, current, true, false)
+		findAndAddToFirstInDirection(current.rightValue, parent, current, false, false)
+
+		if current == parent.left {
+			parent.left = nil
+			parent.leftValue = "0"
+		} else {
+			parent.right = nil
+			parent.rightValue = "0"
+		}
+
+		return true
+	}
+
+	if current.left != nil {
+		isLeftReduced := explodeDay18Recursive(current.left, depth+1)
+
+		if isLeftReduced {
+			return true
+		}
+	} else if isDay18ValueTooBig(current.leftValue) {
+		split := splitDay18Value(current.leftValue)
+		current.leftValue = ""
+		current.left = split
+		return true
+	}
+
+	if current.right != nil {
+		isRightReduced := explodeDay18Recursive(current.right, depth+1)
+		if isRightReduced {
+			return true
+		}
+	} else if isDay18ValueTooBig(current.rightValue) {
+		split := splitDay18Value(current.rightValue)
+		current.rightValue = ""
+		current.right = split
+		return true
+	}
+
+	return false
+}
+
+func reduceDay18(input *day18Node) *day18Node {
+	for {
+		hasExploded := explodeDay18Recursive(input, 1)
+		if !hasExploded {
+			break
+		}
+	}
+
+	return input
 }
