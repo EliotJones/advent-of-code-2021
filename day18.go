@@ -261,3 +261,44 @@ func runToEndDay18(input []string) *day18Node {
 
 	return root
 }
+
+func magnitudeDay18(input *day18Node) int {
+	var left, right int
+	if input.leftValue != "" {
+		left = parseInt(input.leftValue)
+	} else {
+		left = magnitudeDay18(input.left)
+	}
+
+	if input.rightValue != "" {
+		right = parseInt(input.rightValue)
+	} else {
+		right = magnitudeDay18(input.right)
+	}
+
+	return 3*left + 2*right
+}
+
+func locateMaxMagnitude(inputs []string) int {
+	var max int
+	for i, node := range inputs {
+		for j, node2 := range inputs {
+			if i == j {
+				continue
+			}
+
+			one := magnitudeDay18(reduceDay18(addDay18(parseDay18String(node), parseDay18String(node2))))
+			two := magnitudeDay18(reduceDay18(addDay18(parseDay18String(node2), parseDay18String(node))))
+
+			if one > max {
+				max = one
+			}
+
+			if two > max {
+				max = two
+			}
+		}
+	}
+
+	return max
+}
